@@ -75,7 +75,7 @@ const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
         {items.map((item, index) => (
           <motion.div
             key={`${index}-${item.value}`}
-            className={`rounded-t-md width-full ${getBarColor(item.status)}`}
+            className={`relative rounded-t-md width-full ${getBarColor(item.status)}`}
             style={{
               height: getBarHeight(item.value),
               width: `${100 / Math.max(array.length, 1)}%`,
@@ -88,11 +88,12 @@ const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 / animationSpeed }}
           >
-            {array.length <= 20 && (
-              <span className="absolute w-full text-center -top-6 text-xs font-medium">
-                {item.value}
-              </span>
-            )}
+            <span className="absolute w-full text-center -top-6 text-xs font-medium">
+              {item.value}
+            </span>
+            <span className="absolute w-full text-center top-full mt-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+              {index}
+            </span>
           </motion.div>
         ))}
       </AnimatePresence>

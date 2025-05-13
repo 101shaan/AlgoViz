@@ -15,7 +15,7 @@ const Home: React.FC = () => {
       icon: <BarChart4 className="w-6 h-6 text-blue-500" />,
       algorithms: ['Bubble Sort', 'Quick Sort', 'Merge Sort'],
       color: 'from-blue-500 to-indigo-500',
-      link: '/algorithm/bubble-sort'
+      link: '/algorithms#sorting'
     },
     {
       id: 'searching',
@@ -24,7 +24,7 @@ const Home: React.FC = () => {
       icon: <Search className="w-6 h-6 text-green-500" />,
       algorithms: ['Binary Search', 'Linear Search'],
       color: 'from-green-500 to-emerald-500',
-      link: '/algorithm/binary-search'
+      link: '/algorithms#searching'
     },
     {
       id: 'graph',
@@ -33,7 +33,7 @@ const Home: React.FC = () => {
       icon: <GitGraph className="w-6 h-6 text-purple-500" />,
       algorithms: ['Breadth-First Search', 'Depth-First Search'],
       color: 'from-purple-500 to-violet-500',
-      link: '/algorithm/bfs'
+      link: '/algorithms#graph'
     },
     {
       id: 'pathfinding',
@@ -42,7 +42,7 @@ const Home: React.FC = () => {
       icon: <Map className="w-6 h-6 text-rose-500" />,
       algorithms: ['Dijkstra\'s Algorithm', 'A* Search'],
       color: 'from-rose-500 to-pink-500',
-      link: '/algorithm/dijkstra'
+      link: '/algorithms#pathfinding'
     }
   ];
 
@@ -111,7 +111,7 @@ const Home: React.FC = () => {
             </p>
             <div className="flex flex-wrap gap-4">
               <button 
-                onClick={() => navigate('/algorithm/bubble-sort')}
+                onClick={() => navigate('/algorithms')}
                 className="px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-medium transition-colors shadow-lg shadow-blue-500/20 flex items-center gap-2"
               >
                 Start Exploring <ChevronRight className="w-4 h-4" />
@@ -146,7 +146,7 @@ const Home: React.FC = () => {
           {categories.map((category) => (
             <motion.div key={category.id} variants={item}>
               <div 
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 h-full border border-gray-200 dark:border-gray-700"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 h-full border border-gray-200 dark:border-gray-700 cursor-pointer"
                 onClick={() => navigate(category.link)}
               >
                 <div className={`w-12 h-12 rounded-lg mb-4 flex items-center justify-center bg-gradient-to-r ${category.color}`}>
@@ -179,7 +179,7 @@ const Home: React.FC = () => {
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold">Featured Algorithms</h2>
           <button 
-            onClick={() => navigate('/compare')}
+            onClick={() => navigate('/algorithms')}
             className="text-blue-600 dark:text-blue-400 font-medium flex items-center hover:underline"
           >
             View all <ChevronRight className="w-4 h-4 ml-1" />
