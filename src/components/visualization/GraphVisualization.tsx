@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Graph, Node, Edge } from '../../types';
 
 interface GraphVisualizationProps {
@@ -25,6 +25,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
   animationSpeed = 1
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [showLegend, setShowLegend] = useState(false);
   
   const getNodeColor = (node: Node) => {
     if (node.id === currentId) return '#F59E0B'; // Current node (amber)
@@ -80,57 +81,48 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
     
     const scaledNodes = scalePositions();
     
-    // Draw edges with animation
-    const drawEdge = (source: Node, target: Node, progress: number) => {
-      const dx = target.x - source.x;
-      const dy = target.y - source.y;
-      const endX = source.x + dx * progress;
-      const endY = source.y + dy * progress;
+    // Draw edges
+    graph.edges.forEach(edge => {
+      const source = scaledNodes.find(n => n.id === edge.source);
+      const target = scaledNodes.find(n => n.id === edge.target);
+      
+      if (!source || !target) return;
       
       ctx.beginPath();
       ctx.moveTo(source.x, source.y);
-      ctx.lineTo(endX, endY);
+      ctx.lineTo(target.x, target.y);
       ctx.strokeStyle = getEdgeColor(source.id, target.id);
       ctx.lineWidth = 2;
       ctx.stroke();
       
-      // Draw weight if edge is fully drawn
-      if (progress === 1) {
-        const edge = graph.edges.find(e => 
-          (e.source === source.id && e.target === target.id) ||
-          (e.source === target.id && e.target === source.id)
-        );
+      // Draw weight
+      if (edge.weight !== undefined) {
+        const midX = (source.x + target.x) / 2;
+        const midY = (source.y + target.y) / 2;
         
-        if (edge?.weight !== undefined) {
-          const midX = (source.x + target.x) / 2;
-          const midY = (source.y + target.y) / 2;
-          
-          ctx.fillStyle = '#FFFFFF';
-          ctx.beginPath();
-          ctx.arc(midX, midY, 12, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = '#E5E7EB';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-          
-          ctx.fillStyle = '#374151';
-          ctx.font = 'bold 10px Arial';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(edge.weight.toString(), midX, midY);
-        }
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(midX, midY, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#E5E7EB';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        ctx.fillStyle = '#374151';
+        ctx.font = 'bold 10px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(edge.weight.toString(), midX, midY);
       }
-    };
+    });
     
-    // Draw nodes with animation
-    const drawNode = (node: Node, progress: number) => {
-      const radius = 15 * progress;
-      
+    // Draw nodes
+    scaledNodes.forEach(node => {
       // Draw node glow
       ctx.beginPath();
-      ctx.arc(node.x, node.y, radius + 3, 0, Math.PI * 2);
+      ctx.arc(node.x, node.y, 18, 0, Math.PI * 2);
       const nodeColor = getNodeColor(node);
-      const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, radius + 3);
+      const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, 18);
       gradient.addColorStop(0, nodeColor);
       gradient.addColorStop(1, `${nodeColor}00`);
       ctx.fillStyle = gradient;
@@ -138,7 +130,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       
       // Draw node circle
       ctx.beginPath();
-      ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+      ctx.arc(node.x, node.y, 15, 0, Math.PI * 2);
       ctx.fillStyle = nodeColor;
       ctx.fill();
       
@@ -148,46 +140,13 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       ctx.stroke();
       
       // Draw node label
-      if (progress === 1) {
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(node.id, node.x, node.y);
-      }
-    };
-    
-    // Animate the graph
-    let startTime: number | null = null;
-    const duration = 1000 / animationSpeed;
-    
-    const animate = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      
-      ctx.clearRect(0, 0, width, height);
-      
-      // Draw edges
-      graph.edges.forEach(edge => {
-        const source = scaledNodes.find(n => n.id === edge.source);
-        const target = scaledNodes.find(n => n.id === edge.target);
-        if (source && target) {
-          drawEdge(source, target, progress);
-        }
-      });
-      
-      // Draw nodes
-      scaledNodes.forEach(node => {
-        drawNode(node, progress);
-      });
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-    
-    requestAnimationFrame(animate);
-  }, [graph, startId, endId, currentId, visitedNodes, visitedEdges, pathNodes, pathEdges, animationSpeed]);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.id, node.x, node.y);
+    });
+  }, [graph, startId, endId, currentId, visitedNodes, visitedEdges, pathNodes, pathEdges]);
   
   return (
     <div className="relative">
@@ -196,32 +155,36 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
         width={600}
         height={400}
         className="w-full h-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900"
+        onMouseEnter={() => setShowLegend(true)}
+        onMouseLeave={() => setShowLegend(false)}
       />
-      <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg p-3 shadow-md border border-gray-200 dark:border-gray-700">
-        <div className="text-sm font-medium mb-2">Legend</div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
-            <span className="text-sm">Start Node</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-pink-500" />
-            <span className="text-sm">End Node</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-500" />
-            <span className="text-sm">Current Node</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span className="text-sm">Visited Node</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-purple-500" />
-            <span className="text-sm">Path Node</span>
+      {showLegend && (
+        <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg p-3 shadow-md border border-gray-200 dark:border-gray-700 transition-opacity duration-200">
+          <div className="text-sm font-medium mb-2">Legend</div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-blue-500" />
+              <span className="text-sm">Start Node</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-pink-500" />
+              <span className="text-sm">End Node</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-amber-500" />
+              <span className="text-sm">Current Node</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-green-500" />
+              <span className="text-sm">Visited Node</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-purple-500" />
+              <span className="text-sm">Path Node</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

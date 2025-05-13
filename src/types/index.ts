@@ -21,11 +21,15 @@ export interface AnimationStep {
   step: number;
   highlightedLines: number[];
   array?: number[];
-  current?: number;
-  comparing?: number[];
+  current?: string;
+  comparing?: string[];
   swapping?: number[];
   message: string;
   complete?: boolean;
+  visitedNodes?: string[];
+  visitedEdges?: { source: string; target: string }[];
+  pathNodes?: string[];
+  pathEdges?: { source: string; target: string }[];
 }
 
 export interface ArrayItem {

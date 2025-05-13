@@ -12,15 +12,23 @@ export const dijkstraInfo = {
   spaceComplexity: 'O(V)',
   stable: true,
   description: `
-    Dijkstra's algorithm is a popular algorithm for finding the shortest paths between nodes in a graph, 
-    which may represent, for example, road networks. It was conceived by computer scientist Edsger W. Dijkstra in 1956.
-    
-    The algorithm exists in many variants. Dijkstra's original algorithm found the shortest path between two given nodes, 
-    but a more common variant fixes a single node as the "source" node and finds shortest paths from the source to all 
-    other nodes, producing a shortest-path tree.
-    
-    Dijkstra's algorithm uses a priority queue to greedily select the closest vertex that has not yet been processed, 
-    and performs a relaxation operation to potentially improve the shortest path found so far between the source and each destination.
+    Think of Dijkstra's algorithm like planning a road trip. You want to find the shortest route from your 
+    starting point to your destination, considering the distance between each city (or point) along the way.
+
+    Here's how it works:
+    1. Start at your beginning point
+    2. Look at all the directly connected points and their distances
+    3. Always move to the closest unvisited point
+    4. Keep track of the total distance to reach each point
+    5. Update the routes if you find a shorter path
+
+    It's like having a GPS that constantly updates to find the quickest route to your destination!
+
+    Real-world uses include:
+    - Navigation systems finding the fastest route
+    - Network routing (finding the fastest path for data)
+    - Games (pathfinding for characters)
+    - Social networks (finding shortest connection between users)
   `,
   pseudocode: [
     'function Dijkstra(Graph, source):',
@@ -58,30 +66,27 @@ export function generateDijkstraSteps(graph: Graph, startId: string, endId: stri
   const startIdx = nodeMap.get(startId)!;
   const endIdx = nodeMap.get(endId)!;
   
-  // Create adjacency list from edges
-  const adjacencyList: { [key: number]: { node: number; weight: number }[] } = {};
-  nodes.forEach((_, index) => {
-    adjacencyList[index] = [];
-  });
-  
-  edges.forEach(edge => {
-    const sourceIdx = nodeMap.get(edge.source)!;
-    const targetIdx = nodeMap.get(edge.target)!;
-    adjacencyList[sourceIdx].push({ node: targetIdx, weight: edge.weight });
-    adjacencyList[targetIdx].push({ node: sourceIdx, weight: edge.weight }); // For undirected graphs
-  });
-  
   // Initialize distances and previous nodes
   const distances = new Array(nodes.length).fill(Infinity);
   const previous = new Array(nodes.length).fill(null);
   const visited = new Array(nodes.length).fill(false);
+  const visitedNodes: string[] = [];
+  const visitedEdges: { source: string; target: string }[] = [];
+  const pathNodes: string[] = [];
+  const pathEdges: { source: string; target: string }[] = [];
   
   distances[startIdx] = 0;
+  visitedNodes.push(startId);
   
   animations.push({
     step: 0,
     highlightedLines: [1, 2, 3, 4, 5, 6, 7],
     array: [],
+    visitedNodes: [...visitedNodes],
+    visitedEdges: [...visitedEdges],
+    pathNodes: [...pathNodes],
+    pathEdges: [...pathEdges],
+    current: startId,
     message: `Initialize Dijkstra's algorithm from node ${startId}`,
   });
   
@@ -91,6 +96,11 @@ export function generateDijkstraSteps(graph: Graph, startId: string, endId: stri
       step: animations.length,
       highlightedLines: [9],
       array: [],
+      visitedNodes: [...visitedNodes],
+      visitedEdges: [...visitedEdges],
+      pathNodes: [...pathNodes],
+      pathEdges: [...pathEdges],
+      current: startId,
       message: 'Finding the unvisited node with the smallest distance',
     });
     
@@ -109,27 +119,47 @@ export function generateDijkstraSteps(graph: Graph, startId: string, endId: stri
       break;
     }
     
+    const currentNode = nodes[minIndex];
     visited[minIndex] = true;
+    visitedNodes.push(currentNode.id);
     
     animations.push({
       step: animations.length,
       highlightedLines: [10, 11],
       array: [],
-      current: minIndex,
-      message: `Selected node ${nodes[minIndex].id} with distance ${distances[minIndex]}`,
+      visitedNodes: [...visitedNodes],
+      visitedEdges: [...visitedEdges],
+      pathNodes: [...pathNodes],
+      pathEdges: [...pathEdges],
+      current: currentNode.id,
+      message: `Selected node ${currentNode.id} with distance ${distances[minIndex]}`,
     });
     
     // Check all neighbors of the current node
-    for (const { node: neighborIdx, weight } of adjacencyList[minIndex]) {
+    const neighbors = edges
+      .filter(edge => edge.source === currentNode.id || edge.target === currentNode.id)
+      .map(edge => ({
+        node: edge.source === currentNode.id ? edge.target : edge.source,
+        weight: edge.weight
+      }));
+    
+    for (const { node: neighborId, weight } of neighbors) {
+      const neighborIdx = nodeMap.get(neighborId)!;
       if (visited[neighborIdx]) continue;
+      
+      visitedEdges.push({ source: currentNode.id, target: neighborId });
       
       animations.push({
         step: animations.length,
         highlightedLines: [13],
         array: [],
-        current: minIndex,
-        comparing: [neighborIdx],
-        message: `Checking neighbor ${nodes[neighborIdx].id}`,
+        visitedNodes: [...visitedNodes],
+        visitedEdges: [...visitedEdges],
+        pathNodes: [...pathNodes],
+        pathEdges: [...pathEdges],
+        current: currentNode.id,
+        comparing: [neighborId],
+        message: `Checking neighbor ${neighborId}`,
       });
       
       const alt = distances[minIndex] + weight;
@@ -138,9 +168,13 @@ export function generateDijkstraSteps(graph: Graph, startId: string, endId: stri
         step: animations.length,
         highlightedLines: [14],
         array: [],
-        current: minIndex,
-        comparing: [neighborIdx],
-        message: `Current distance to ${nodes[neighborIdx].id}: ${distances[neighborIdx] === Infinity ? '∞' : distances[neighborIdx]}. New potential distance: ${alt}`,
+        visitedNodes: [...visitedNodes],
+        visitedEdges: [...visitedEdges],
+        pathNodes: [...pathNodes],
+        pathEdges: [...pathEdges],
+        current: currentNode.id,
+        comparing: [neighborId],
+        message: `Current distance to ${neighborId}: ${distances[neighborIdx] === Infinity ? '∞' : distances[neighborIdx]}. New potential distance: ${alt}`,
       });
       
       if (alt < distances[neighborIdx]) {
@@ -148,9 +182,13 @@ export function generateDijkstraSteps(graph: Graph, startId: string, endId: stri
           step: animations.length,
           highlightedLines: [15, 16],
           array: [],
-          current: minIndex,
-          comparing: [neighborIdx],
-          message: `Update distance to ${nodes[neighborIdx].id} from ${distances[neighborIdx] === Infinity ? '∞' : distances[neighborIdx]} to ${alt}`,
+          visitedNodes: [...visitedNodes],
+          visitedEdges: [...visitedEdges],
+          pathNodes: [...pathNodes],
+          pathEdges: [...pathEdges],
+          current: currentNode.id,
+          comparing: [neighborId],
+          message: `Update distance to ${neighborId} from ${distances[neighborIdx] === Infinity ? '∞' : distances[neighborIdx]} to ${alt}`,
         });
         
         distances[neighborIdx] = alt;
@@ -160,12 +198,21 @@ export function generateDijkstraSteps(graph: Graph, startId: string, endId: stri
   }
   
   // Reconstruct the path
-  const path = [];
   let current = endIdx;
   
   if (previous[current] !== null || current === startIdx) {
     while (current !== null) {
-      path.unshift(current);
+      const currentNodeId = nodes[current].id;
+      pathNodes.unshift(currentNodeId);
+      
+      if (previous[current] !== null) {
+        const prevNodeId = nodes[previous[current]].id;
+        pathEdges.unshift({
+          source: prevNodeId,
+          target: currentNodeId
+        });
+      }
+      
       current = previous[current];
     }
     
@@ -173,7 +220,11 @@ export function generateDijkstraSteps(graph: Graph, startId: string, endId: stri
       step: animations.length,
       highlightedLines: [18],
       array: [],
-      message: `Found shortest path: ${path.map(idx => nodes[idx].id).join(' -> ')}`,
+      visitedNodes: [...visitedNodes],
+      visitedEdges: [...visitedEdges],
+      pathNodes: [...pathNodes],
+      pathEdges: [...pathEdges],
+      message: `Found shortest path: ${pathNodes.join(' -> ')}`,
       complete: true,
     });
   } else {
@@ -181,6 +232,10 @@ export function generateDijkstraSteps(graph: Graph, startId: string, endId: stri
       step: animations.length,
       highlightedLines: [18],
       array: [],
+      visitedNodes: [...visitedNodes],
+      visitedEdges: [...visitedEdges],
+      pathNodes: [...pathNodes],
+      pathEdges: [...pathEdges],
       message: `No path found from ${startId} to ${endId}`,
       complete: true,
     });

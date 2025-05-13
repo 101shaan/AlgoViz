@@ -197,9 +197,13 @@ const AlgorithmPage: React.FC = () => {
               {isGraphAlgorithm ? (
                 <GraphVisualization 
                   graph={testGraph}
-                  startId="A"
-                  endId="F"
+                  startId={currentAlgorithm.id === 'dijkstra' ? 'A' : 'A'}
+                  endId={currentAlgorithm.id === 'dijkstra' ? 'F' : undefined}
                   currentId={currentStepData?.current}
+                  visitedNodes={currentStepData?.visitedNodes}
+                  visitedEdges={currentStepData?.visitedEdges}
+                  pathNodes={currentStepData?.pathNodes}
+                  pathEdges={currentStepData?.pathEdges}
                   animationSpeed={animationSpeed}
                 />
               ) : (

@@ -12,16 +12,18 @@ export const bfsInfo = {
   spaceComplexity: 'O(V)',
   stable: true,
   description: `
-    Breadth-First Search (BFS) is a graph traversal algorithm that explores all the vertices of a graph at the present 
-    depth before moving on to vertices at the next depth level. This makes BFS particularly useful for finding the 
-    shortest path on unweighted graphs.
-    
-    BFS uses a queue data structure to keep track of vertices to visit next. It starts at a specific vertex (the "source"), 
-    visits all of its neighbors, then visits the neighbors of those neighbors, and so on, until all reachable vertices 
-    have been visited.
-    
-    BFS is widely used in networking, web crawlers, finding connected components, and solving puzzles like the shortest 
-    path in a maze.
+    Breadth-First Search (BFS) is like exploring a maze level by level. Instead of going deep into one path, 
+    it checks all nearby locations first before moving further away.
+
+    Imagine you're standing in a room (let's call it the starting point). BFS first looks at all the doors 
+    in that room. Then, for each door, it looks at all the rooms connected to those doors, and so on. 
+    This way, you explore everything close to you before venturing further away.
+
+    This makes BFS perfect for:
+    - Finding the shortest path between two points
+    - Exploring all possible moves in a game
+    - Checking if two points are connected
+    - Social network connections (finding friends of friends)
   `,
   pseudocode: [
     'procedure BFS(G, startVertex):',
@@ -62,27 +64,34 @@ export function generateBFSSteps(graph: Graph, startId: string): AnimationStep[]
     adjacencyList[targetIdx].push(sourceIdx); // For undirected graphs
   });
   
-  // Initialize visited array
+  // Initialize visited array and queue
   const visited = new Array(nodes.length).fill(false);
   const queue: number[] = [];
-  const visitOrder: number[] = [];
+  const visitedNodes: string[] = [];
+  const visitedEdges: { source: string; target: string }[] = [];
   
   animations.push({
     step: 0,
     highlightedLines: [1, 2, 3, 4],
     array: [],
+    visitedNodes: [],
+    visitedEdges: [],
+    current: startId,
     message: `Start BFS from node ${startId}`,
   });
   
   // Initialize BFS
   visited[startIdx] = true;
   queue.push(startIdx);
+  visitedNodes.push(nodes[startIdx].id);
   
   animations.push({
     step: animations.length,
     highlightedLines: [3, 4],
     array: [],
-    current: startIdx,
+    visitedNodes: [...visitedNodes],
+    visitedEdges: [...visitedEdges],
+    current: nodes[startIdx].id,
     message: `Mark node ${nodes[startIdx].id} as discovered and add to queue`,
   });
   
@@ -92,17 +101,21 @@ export function generateBFSSteps(graph: Graph, startId: string): AnimationStep[]
       step: animations.length,
       highlightedLines: [5],
       array: [],
+      visitedNodes: [...visitedNodes],
+      visitedEdges: [...visitedEdges],
+      current: nodes[queue[0]].id,
       message: `Queue: [${queue.map(idx => nodes[idx].id).join(', ')}]`,
     });
     
     const current = queue.shift()!;
-    visitOrder.push(current);
     
     animations.push({
       step: animations.length,
       highlightedLines: [6],
       array: [],
-      current: current,
+      visitedNodes: [...visitedNodes],
+      visitedEdges: [...visitedEdges],
+      current: nodes[current].id,
       message: `Dequeue node ${nodes[current].id}`,
     });
     
@@ -112,30 +125,41 @@ export function generateBFSSteps(graph: Graph, startId: string): AnimationStep[]
         step: animations.length,
         highlightedLines: [7],
         array: [],
-        current: current,
-        comparing: [neighbor],
+        visitedNodes: [...visitedNodes],
+        visitedEdges: [...visitedEdges],
+        current: nodes[current].id,
+        comparing: [nodes[neighbor].id],
         message: `Check neighbor ${nodes[neighbor].id}`,
       });
       
       if (!visited[neighbor]) {
+        visited[neighbor] = true;
+        queue.push(neighbor);
+        visitedNodes.push(nodes[neighbor].id);
+        visitedEdges.push({
+          source: nodes[current].id,
+          target: nodes[neighbor].id
+        });
+        
         animations.push({
           step: animations.length,
           highlightedLines: [8, 9, 10],
           array: [],
-          current: current,
-          comparing: [neighbor],
+          visitedNodes: [...visitedNodes],
+          visitedEdges: [...visitedEdges],
+          current: nodes[current].id,
+          comparing: [nodes[neighbor].id],
           message: `Mark node ${nodes[neighbor].id} as discovered and add to queue`,
         });
-        
-        visited[neighbor] = true;
-        queue.push(neighbor);
       } else {
         animations.push({
           step: animations.length,
           highlightedLines: [8],
           array: [],
-          current: current,
-          comparing: [neighbor],
+          visitedNodes: [...visitedNodes],
+          visitedEdges: [...visitedEdges],
+          current: nodes[current].id,
+          comparing: [nodes[neighbor].id],
           message: `Node ${nodes[neighbor].id} already discovered, skip`,
         });
       }
@@ -146,7 +170,9 @@ export function generateBFSSteps(graph: Graph, startId: string): AnimationStep[]
     step: animations.length,
     highlightedLines: [1, 10],
     array: [],
-    message: `BFS complete. Visit order: ${visitOrder.map(idx => nodes[idx].id).join(' -> ')}`,
+    visitedNodes: [...visitedNodes],
+    visitedEdges: [...visitedEdges],
+    message: `BFS complete. Visit order: ${visitedNodes.join(' -> ')}`,
     complete: true,
   });
   
