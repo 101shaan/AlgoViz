@@ -12,68 +12,45 @@ export const dijkstraInfo = {
   spaceComplexity: 'O(V)',
   stable: true,
   description: `
-    Dijkstra's algorithm finds the shortest path between nodes in a weighted graph. It works by maintaining 
-    a set of unvisited nodes and continuously updating the shortest distance to each node from the starting point.
-    
-    The algorithm uses a priority queue to always process the node with the currently shortest known distance first, 
-    making it efficient for finding optimal paths in weighted graphs.
-  `,
-  implementations: {
-    javascript: `// JavaScript Implementation
-function dijkstra(graph, start) {
-  const distances = {};                    // Store shortest distances from start
-  const pq = new PriorityQueue();         // Priority queue for efficient node selection
-  const previous = {};                     // Store path information
-  
-  // Initialize distances
-  for (let vertex in graph) {             // For each vertex in the graph
-    distances[vertex] = Infinity;          // Set initial distance to Infinity
-    previous[vertex] = null;              // No previous vertex in path yet
-  }
-  distances[start] = 0;                   // Distance to start is 0
-  pq.enqueue(start, 0);                   // Add start to priority queue
-  
-  while (!pq.isEmpty()) {                 // While there are nodes to process
-    const current = pq.dequeue();         // Get node with shortest distance
-    
-    for (let [neighbor, weight] of graph[current]) {  // For each neighbor
-      const distance = distances[current] + weight;    // Calculate distance
-      
-      if (distance < distances[neighbor]) {           // If new distance is shorter
-        distances[neighbor] = distance;               // Update distance
-        previous[neighbor] = current;                 // Update path
-        pq.enqueue(neighbor, distance);              // Add to priority queue
-      }
-    }
-  }
-  
-  return { distances, previous };         // Return distances and path info
-}`,
-    python: `# Python Implementation
-import heapq
+    Think of Dijkstra's algorithm like planning a road trip. You want to find the shortest route from your 
+    starting point to your destination, considering the distance between each city (or point) along the way.
 
-def dijkstra(graph, start):
-    distances = {node: float('inf') for node in graph}  # Initialize distances to infinity
-    distances[start] = 0                                # Distance to start is 0
-    pq = [(0, start)]                                  # Priority queue: (distance, node)
-    previous = {node: None for node in graph}          # Store path information
-    
-    while pq:                                          # While there are nodes to process
-        current_dist, current = heapq.heappop(pq)      # Get node with shortest distance
-        
-        if current_dist > distances[current]:          # Skip if we found better path
-            continue
-        
-        for neighbor, weight in graph[current]:        # For each neighbor
-            distance = current_dist + weight           # Calculate distance
-            
-            if distance < distances[neighbor]:         # If new distance is shorter
-                distances[neighbor] = distance         # Update distance
-                previous[neighbor] = current          # Update path
-                heapq.heappush(pq, (distance, neighbor))  # Add to priority queue
-    
-    return distances, previous                        # Return distances and path info`
-  }
+    Here's how it works:
+    1. Start at your beginning point
+    2. Look at all the directly connected points and their distances
+    3. Always move to the closest unvisited point
+    4. Keep track of the total distance to reach each point
+    5. Update the routes if you find a shorter path
+
+    It's like having a GPS that constantly updates to find the quickest route to your destination!
+
+    Real-world uses include:
+    - Navigation systems finding the fastest route
+    - Network routing (finding the fastest path for data)
+    - Games (pathfinding for characters)
+    - Social networks (finding shortest connection between users)
+  `,
+  pseudocode: [
+    'function Dijkstra(Graph, source):',
+    '    create vertex set Q',
+    '    for each vertex v in Graph:',
+    '        dist[v] := INFINITY',
+    '        prev[v] := UNDEFINED',
+    '        add v to Q',
+    '    dist[source] := 0',
+    '',
+    '    while Q is not empty:',
+    '        u := vertex in Q with min dist[u]',
+    '        remove u from Q',
+    '        ',
+    '        for each neighbor v of u:',
+    '            alt := dist[u] + length(u, v)',
+    '            if alt < dist[v]:',
+    '                dist[v] := alt',
+    '                prev[v] := u',
+    '',
+    '    return dist[], prev[]',
+  ],
 };
 
 export function generateDijkstraSteps(graph: Graph, startId: string, endId: string): AnimationStep[] {
@@ -266,5 +243,3 @@ export function generateDijkstraSteps(graph: Graph, startId: string, endId: stri
   
   return animations;
 }
-
-export { dijkstraInfo, generateDijkstraSteps }

@@ -20,34 +20,6 @@ export const bubbleSortInfo = {
     where n is the number of items being sorted. However, it's one of the simplest sorting algorithms to understand 
     and implement.
   `,
-  implementations: {
-    javascript: `// JavaScript Implementation
-function bubbleSort(arr) {
-  const n = arr.length;                    // Get the length of the array
-  
-  for (let i = 0; i < n; i++) {           // Outer loop: n iterations
-    for (let j = 0; j < n - 1 - i; j++) { // Inner loop: Skip last i elements (already sorted)
-      if (arr[j] > arr[j + 1]) {          // If current element is greater than next
-        // Swap elements using destructuring
-        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-      }
-    }
-  }
-  
-  return arr;                             // Return the sorted array
-}`,
-    python: `# Python Implementation
-def bubble_sort(arr):
-    n = len(arr)                          # Get the length of the array
-    
-    for i in range(n):                    # Outer loop: n iterations
-        for j in range(n - 1 - i):        # Inner loop: Skip last i elements (already sorted)
-            if arr[j] > arr[j + 1]:       # If current element is greater than next
-                # Swap elements using Python's multiple assignment
-                arr[j], arr[j + 1] = arr[j + 1], arr[j]
-    
-    return arr                            # Return the sorted array`
-  },
   pseudocode: [
     'procedure bubbleSort(A: list of sortable items)',
     '    n := length(A)',
