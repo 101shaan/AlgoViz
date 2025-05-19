@@ -11,7 +11,10 @@ export interface Algorithm {
   spaceComplexity: string;
   stable: boolean;
   description: string;
-  pseudocode: string[];
+  implementations: {
+    javascript: string;
+    python: string;
+  };
 }
 
 export type AlgorithmCategory = 'sorting' | 'searching' | 'pathfinding' | 'graph';
@@ -30,6 +33,7 @@ export interface AnimationStep {
   visitedEdges?: { source: string; target: string }[];
   pathNodes?: string[];
   pathEdges?: { source: string; target: string }[];
+  queue?: string[]; // Add queue property
 }
 
 export interface ArrayItem {
@@ -48,18 +52,10 @@ export interface Node {
 export interface Edge {
   source: string;
   target: string;
-  weight: number;
   status: 'default' | 'visited' | 'path';
 }
 
 export interface Graph {
   nodes: Node[];
   edges: Edge[];
-}
-
-// Pseudocode Types
-export interface PseudocodeStep {
-  line: number;
-  code: string;
-  indent: number;
 }

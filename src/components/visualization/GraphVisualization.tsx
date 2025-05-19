@@ -10,6 +10,7 @@ interface GraphVisualizationProps {
   visitedEdges?: { source: string; target: string }[];
   pathNodes?: string[];
   pathEdges?: { source: string; target: string }[];
+  queue?: string[]; // Add queue prop
   animationSpeed?: number;
 }
 
@@ -22,6 +23,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
   visitedEdges = [],
   pathNodes = [],
   pathEdges = [],
+  queue = [], // Add queue prop with default value
   animationSpeed = 1
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -94,26 +96,6 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       ctx.strokeStyle = getEdgeColor(source.id, target.id);
       ctx.lineWidth = 2;
       ctx.stroke();
-      
-      // Draw weight
-      if (edge.weight !== undefined) {
-        const midX = (source.x + target.x) / 2;
-        const midY = (source.y + target.y) / 2;
-        
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(midX, midY, 12, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#E5E7EB';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        
-        ctx.fillStyle = '#374151';
-        ctx.font = 'bold 10px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(edge.weight.toString(), midX, midY);
-      }
     });
     
     // Draw nodes
@@ -158,6 +140,24 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
         onMouseEnter={() => setShowLegend(true)}
         onMouseLeave={() => setShowLegend(false)}
       />
+      
+      {/* Queue Visualization */}
+      {queue.length > 0 && (
+        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="text-sm font-medium mb-2">Queue</div>
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {queue.map((nodeId, index) => (
+              <div
+                key={`${nodeId}-${index}`}
+                className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-700 dark:text-blue-300 font-medium border border-blue-200 dark:border-blue-800"
+              >
+                {nodeId}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
       {showLegend && (
         <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg p-3 shadow-md border border-gray-200 dark:border-gray-700 transition-opacity duration-200">
           <div className="text-sm font-medium mb-2">Legend</div>

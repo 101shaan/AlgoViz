@@ -25,18 +25,50 @@ export const bfsInfo = {
     - Checking if two points are connected
     - Social network connections (finding friends of friends)
   `,
-  pseudocode: [
-    'procedure BFS(G, startVertex):',
-    '    let Q be a queue',
-    '    label startVertex as discovered',
-    '    Q.enqueue(startVertex)',
-    '    while Q is not empty:',
-    '        v := Q.dequeue()',
-    '        for all edges from v to w in G.adjacencyList[v] do:',
-    '            if w is not labeled as discovered:',
-    '                label w as discovered',
-    '                Q.enqueue(w)',
-  ],
+  implementations: {
+    javascript: `// JavaScript Implementation
+function bfs(graph, startNode) {
+  const visited = new Set();
+  const queue = [startNode];
+  visited.add(startNode);
+  
+  while (queue.length > 0) {
+    const current = queue.shift();
+    
+    // Get all neighbors of current node
+    const neighbors = graph[current] || [];
+    
+    for (const neighbor of neighbors) {
+      if (!visited.has(neighbor)) {
+        visited.add(neighbor);
+        queue.push(neighbor);
+      }
+    }
+  }
+  
+  return visited;
+}`,
+    python: `# Python Implementation
+from collections import deque
+
+def bfs(graph, start_node):
+    visited = set()
+    queue = deque([start_node])
+    visited.add(start_node)
+    
+    while queue:
+        current = queue.popleft()
+        
+        # Get all neighbors of current node
+        neighbors = graph.get(current, [])
+        
+        for neighbor in neighbors:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+    
+    return visited`
+  }
 };
 
 export function generateBFSSteps(graph: Graph, startId: string): AnimationStep[] {
@@ -72,12 +104,13 @@ export function generateBFSSteps(graph: Graph, startId: string): AnimationStep[]
   
   animations.push({
     step: 0,
-    highlightedLines: [1, 2, 3, 4],
+    highlightedLines: [2, 3, 4],
     array: [],
     visitedNodes: [],
     visitedEdges: [],
     current: startId,
     message: `Start BFS from node ${startId}`,
+    queue: [] // Add queue visualization
   });
   
   // Initialize BFS
@@ -93,46 +126,39 @@ export function generateBFSSteps(graph: Graph, startId: string): AnimationStep[]
     visitedEdges: [...visitedEdges],
     current: nodes[startIdx].id,
     message: `Mark node ${nodes[startIdx].id} as discovered and add to queue`,
+    queue: queue.map(idx => nodes[idx].id) // Show queue contents
   });
   
   // Main BFS loop
   while (queue.length > 0) {
-    animations.push({
-      step: animations.length,
-      highlightedLines: [5],
-      array: [],
-      visitedNodes: [...visitedNodes],
-      visitedEdges: [...visitedEdges],
-      current: nodes[queue[0]].id,
-      message: `Queue: [${queue.map(idx => nodes[idx].id).join(', ')}]`,
-    });
-    
     const current = queue.shift()!;
     
     animations.push({
       step: animations.length,
-      highlightedLines: [6],
+      highlightedLines: [7],
       array: [],
       visitedNodes: [...visitedNodes],
       visitedEdges: [...visitedEdges],
       current: nodes[current].id,
       message: `Dequeue node ${nodes[current].id}`,
+      queue: queue.map(idx => nodes[idx].id)
     });
     
     // Process all neighbors
     for (const neighbor of adjacencyList[current]) {
-      animations.push({
-        step: animations.length,
-        highlightedLines: [7],
-        array: [],
-        visitedNodes: [...visitedNodes],
-        visitedEdges: [...visitedEdges],
-        current: nodes[current].id,
-        comparing: [nodes[neighbor].id],
-        message: `Check neighbor ${nodes[neighbor].id}`,
-      });
-      
       if (!visited[neighbor]) {
+        animations.push({
+          step: animations.length,
+          highlightedLines: [12, 13],
+          array: [],
+          visitedNodes: [...visitedNodes],
+          visitedEdges: [...visitedEdges],
+          current: nodes[current].id,
+          comparing: [nodes[neighbor].id],
+          message: `Check unvisited neighbor ${nodes[neighbor].id}`,
+          queue: queue.map(idx => nodes[idx].id)
+        });
+        
         visited[neighbor] = true;
         queue.push(neighbor);
         visitedNodes.push(nodes[neighbor].id);
@@ -143,24 +169,14 @@ export function generateBFSSteps(graph: Graph, startId: string): AnimationStep[]
         
         animations.push({
           step: animations.length,
-          highlightedLines: [8, 9, 10],
+          highlightedLines: [14, 15],
           array: [],
           visitedNodes: [...visitedNodes],
           visitedEdges: [...visitedEdges],
           current: nodes[current].id,
           comparing: [nodes[neighbor].id],
           message: `Mark node ${nodes[neighbor].id} as discovered and add to queue`,
-        });
-      } else {
-        animations.push({
-          step: animations.length,
-          highlightedLines: [8],
-          array: [],
-          visitedNodes: [...visitedNodes],
-          visitedEdges: [...visitedEdges],
-          current: nodes[current].id,
-          comparing: [nodes[neighbor].id],
-          message: `Node ${nodes[neighbor].id} already discovered, skip`,
+          queue: [...queue.map(idx => nodes[idx].id), nodes[neighbor].id]
         });
       }
     }
@@ -168,12 +184,13 @@ export function generateBFSSteps(graph: Graph, startId: string): AnimationStep[]
   
   animations.push({
     step: animations.length,
-    highlightedLines: [1, 10],
+    highlightedLines: [19],
     array: [],
     visitedNodes: [...visitedNodes],
     visitedEdges: [...visitedEdges],
     message: `BFS complete. Visit order: ${visitedNodes.join(' -> ')}`,
-    complete: true,
+    queue: [],
+    complete: true
   });
   
   return animations;
