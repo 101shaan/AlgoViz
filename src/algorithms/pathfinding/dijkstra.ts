@@ -266,3 +266,5 @@ export function generateDijkstraSteps(graph: Graph, startId: string, endId: stri
   
   return animations;
 }
+
+export { dijkstraInfo, generateDijkstraSteps }
