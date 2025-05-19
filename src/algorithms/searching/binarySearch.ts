@@ -19,19 +19,43 @@ export const binarySearchInfo = {
     This algorithm has a logarithmic time complexity, making it much faster than linear search for large datasets. 
     However, it requires that the list be sorted before searching begins.
   `,
-  pseudocode: [
-    'procedure binarySearch(A, target, low, high)',
-    '    if high < low',
-    '        return -1 // Not found',
-    '    mid := low + (high - low) / 2',
-    '    if A[mid] > target',
-    '        return binarySearch(A, target, low, mid - 1)',
-    '    else if A[mid] < target',
-    '        return binarySearch(A, target, mid + 1, high)',
-    '    else',
-    '        return mid // Found',
-    'end procedure',
-  ],
+  implementations: {
+    javascript: `// JavaScript Implementation
+function binarySearch(arr, target) {
+  let left = 0;                           // Initialize left pointer to start of array
+  let right = arr.length - 1;             // Initialize right pointer to end of array
+  
+  while (left <= right) {                 // Continue while there are elements to search
+    const mid = Math.floor((left + right) / 2);  // Calculate middle index
+    
+    if (arr[mid] === target) {            // If middle element is the target
+      return mid;                         // Return its index
+    } else if (arr[mid] < target) {       // If middle element is less than target
+      left = mid + 1;                     // Search in right half
+    } else {                              // If middle element is greater than target
+      right = mid - 1;                    // Search in left half
+    }
+  }
+  
+  return -1;                              // Target not found
+}`,
+    python: `# Python Implementation
+def binary_search(arr, target):
+    left = 0                              # Initialize left pointer to start of array
+    right = len(arr) - 1                  # Initialize right pointer to end of array
+    
+    while left <= right:                  # Continue while there are elements to search
+        mid = (left + right) // 2         # Calculate middle index
+        
+        if arr[mid] == target:            # If middle element is the target
+            return mid                     # Return its index
+        elif arr[mid] < target:           # If middle element is less than target
+            left = mid + 1                # Search in right half
+        else:                             # If middle element is greater than target
+            right = mid - 1               # Search in left half
+    
+    return -1                             # Target not found`
+  }
 };
 
 export function generateBinarySearchSteps(array: number[], target: number): AnimationStep[] {
